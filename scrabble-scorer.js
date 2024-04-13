@@ -1,5 +1,3 @@
-// This assignment is inspired by a problem on Exercism (https://exercism.org/tracks/javascript/exercises/etl) that demonstrates Extract-Transform-Load using Scrabble's scoring system. 
-
 const input = require("readline-sync");
 
 const oldPointStructure = {
@@ -12,60 +10,85 @@ const oldPointStructure = {
   10: ['Q', 'Z']
 };
 
-function oldScrabbleScorer(word) {
-	word = word.toUpperCase();
-	let letterPoints = "";
- 
-	for (let i = 0; i < word.length; i++) {
- 
-	  for (const pointValue in oldPointStructure) {
- 
-		 if (oldPointStructure[pointValue].includes(word[i])) {
-			letterPoints += `Points for '${word[i]}': ${pointValue}\n`
-		 }
- 
-	  }
-	}
-	return letterPoints;
- }
-
-// your job is to finish writing these functions and variables that we've named //
-// don't change the names or your program won't work as expected. //
-
-function initialPrompt() {
-   console.log("Let's play some scrabble! Enter a word:");
-};
-
-let simpleScorer;
-
-let vowelBonusScorer;
-
-let scrabbleScorer;
-
-const scoringAlgorithms = [];
-
-function scorerPrompt() {}
-
-function transform() {};
-
-let newPointStructure;
-
-function runProgram() {
-   initialPrompt();
-   
+function transform(oldStructure) {
+   let newStructure = {};
+   for (let pointValue in oldStructure) {
+       let letters = oldStructure[pointValue]; 
+       for (let i = 0; i < letters.length; i++) {
+           let letter = letters[i].toLowerCase();
+           newStructure[letter] = Number(pointValue);
+       }
+   }
+   return newStructure;
 }
 
-// Don't write any code below this line //
-// And don't change these or your program will not run as expected //
+let newPointStructure = transform(oldPointStructure);
+
+function scrabbleScorer(word) {
+   word = word.toUpperCase();
+   let score = 0;
+   for (let i = 0; i < word.length; i++) {
+       let char = word[i].toLowerCase();
+       if (char in newPointStructure) {
+           score += newPointStructure[char];
+       }
+   }
+   return score;
+}
+
+function initialPrompt() {
+   console.log("Let's play some Scrabble!\n");
+   return input.question("Enter a word to score: ");
+}
+
+function simpleScorer(word) {
+   return word.trim().length;
+}
+
+function vowelBonusScorer(word) {
+    const vowels = ['A', 'E', 'I', 'O', 'U'];
+    let totalScore = 0;
+    word = word.trim().toUpperCase();
+    for (let i = 0; i < word.length; i++) {
+        if (vowels.includes(word[i])) {
+            totalScore += 3;
+        } else {
+            totalScore += 1;
+        }
+    }
+    return totalScore;
+}
+
+const scoringAlgorithms = [
+    { scorerFunction: simpleScorer },
+    { scorerFunction: vowelBonusScorer },
+    { scorerFunction: scrabbleScorer }
+];
+
+function scorerPrompt(word) {
+    console.log("Which scoring algorithm would you like to use?");
+    console.log("0 - Simple: One point per character");
+    console.log("1 - Vowel Bonus: Vowels are worth 3 points");
+    console.log("2 - Scrabble: Uses scrabble point system");
+    let selection = input.question("Enter 0, 1, or 2: ");
+    return scoringAlgorithms[Number(selection)].scorerFunction(word);
+}
+
+function runProgram() {
+    let word = initialPrompt();
+    let totalScore = scorerPrompt(word);
+    console.log(`Score for '${word}': ${totalScore}`);
+}
+
 module.exports = {
-   initialPrompt: initialPrompt,
-   transform: transform,
-   oldPointStructure: oldPointStructure,
-   simpleScorer: simpleScorer,
-   vowelBonusScorer: vowelBonusScorer,
-   scrabbleScorer: scrabbleScorer,
-   scoringAlgorithms: scoringAlgorithms,
-   newPointStructure: newPointStructure,
-	runProgram: runProgram,
-	scorerPrompt: scorerPrompt
+   initialPrompt,
+   transform,
+   oldPointStructure,
+   newPointStructure,
+   simpleScorer,
+   vowelBonusScorer,
+   scrabbleScorer,
+   scoringAlgorithms,
+   runProgram,
+   scorerPrompt
 };
