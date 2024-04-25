@@ -92,3 +92,5 @@ module.exports = {
    runProgram,
    scorerPrompt
 };
+
+//enabled actions
